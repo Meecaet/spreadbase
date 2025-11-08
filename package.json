@@ -1,0 +1,27 @@
+{
+  "name": "spreadbase",
+  "version": "0.0.2",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+
+  "devDependencies": {
+    "@types/google-apps-script": "^2.0.7",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "reflect-metadata": "^0.2.2"
+  }
+}
