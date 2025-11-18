@@ -69,4 +69,21 @@ export class SpreadbaseContext {
       throw e;
     }
   }
+
+  /**
+   * Synchronizes the spreadsheet schema with the entity definitions.
+   * Adds missing sheets and appends missing columns to headers.
+   * Does NOT delete existing data or columns.
+   */
+  public sync(): void {
+    try {
+      for (const entity of metadataStorage.entities) {
+        this.spreadsheetService.syncSheetHeaders(entity.target);
+      }
+      Logger.log('Spreadbase: Schema sync complete.');
+    } catch (e) {
+      console.error('Spreadbase: Schema sync failed.', e);
+      throw e;
+    }
+  }
 }

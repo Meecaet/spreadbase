@@ -1,9 +1,10 @@
 // src/decorators/column.decorators.ts
 import { metadataStorage } from '../core/metadata-storage';
 
+export type ColumnType = 'string' | 'number' | 'boolean' | 'date' | 'json';
+
 export interface ColumnOptions {
-  // We can add things like 'name' if the sheet column name is different
-  // from the property name. For now, it's a placeholder.
+  type?: ColumnType;
 }
 
 export function Column(options?: ColumnOptions): PropertyDecorator {
@@ -12,7 +13,7 @@ export function Column(options?: ColumnOptions): PropertyDecorator {
     metadataStorage.addColumn({
       target: target,
       propertyName: propertyName.toString(),
-      // ...options could be passed here
+      type: options?.type!
     });
   };
 }

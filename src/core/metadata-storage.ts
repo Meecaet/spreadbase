@@ -1,16 +1,28 @@
-import { PrimaryKeyOptions } from "../decorators/column.decorator";
+import { PrimaryKeyOptions, ColumnType } from "../decorators/column.decorator";
 
 export interface ColumnMetadata {
   target: Function;
   propertyName: string;
   isPrimaryKey: boolean;
   isAutoIncrement: boolean;
+  type?: ColumnType
 }
 
 export interface EntityMetadata {
   target: Function;
   sheetName: string;
   columns: ColumnMetadata[];
+  relations: RelationMetadata[];
+}
+
+export type RelationType = '1:1' | '1:N' | 'N:1';
+
+export interface RelationMetadata {
+  target: Function;       
+  propertyKey: string;
+  relationType: RelationType;
+  relatedTypeFunc: () => Function;
+  foreignKeyColumn: string;
 }
 
 class MetadataStorage {
@@ -26,7 +38,8 @@ class MetadataStorage {
       entity = {
         target: entityConstructor,
         sheetName: '', // Placeholder, will be filled by @Entity
-        columns: []
+        columns: [],
+        relations: []
       };
       this.entities.push(entity);
     }
@@ -36,7 +49,7 @@ class MetadataStorage {
   /**
    * Called by @Entity decorator
    */
-  public addEntity(metadata: Omit<EntityMetadata, 'columns'>) {
+  public addEntity(metadata: Omit<EntityMetadata, 'columns' | 'relations'>) {
     // Find the entity (it might be a shell) and update it
     const entity = this.findOrCreateEntity(metadata.target);
     entity.sheetName = metadata.sheetName;
@@ -45,7 +58,7 @@ class MetadataStorage {
   /**
    * Called by @Column decorator
    */
-  public addColumn(metadata: { target: Object; propertyName: string; }) {
+  public addColumn(metadata: { target: Object; propertyName: string; type?: ColumnType}) {
     const entity = this.findOrCreateEntity(metadata.target.constructor);
     
     // Avoid adding duplicate columns
@@ -54,7 +67,8 @@ class MetadataStorage {
             target: metadata.target.constructor,
             propertyName: metadata.propertyName, 
             isPrimaryKey: false,
-            isAutoIncrement: false // <-- Set default
+            isAutoIncrement: false,
+            type: metadata.type!
         });
     }
   }
@@ -88,6 +102,14 @@ class MetadataStorage {
         isAutoIncrement: isAuto 
       });
     }
+  }
+
+/**
+ * Called by @PrimaryKey decorator
+ */
+  public addRelation(metadata: RelationMetadata) {
+    const entity = this.findOrCreateEntity(metadata.target);
+    entity.relations.push(metadata);
   }
 }
   

@@ -1,23 +1,39 @@
-// src/decorators/relationship.decorators.ts
+import { metadataStorage } from '../core/metadata-storage';
+
+export interface RelationOptions {
+    foreignKey: string;
+}
 
 /**
- * Decorator for a one-to-many relationship (navigation property).
- * Example: A User has many Posts. This goes on the User.posts property.
- * * @param typeFunction - A function that returns the related entity class.
+ * Defines a One-to-Many relationship
+ * @param typeFunc Function returning the related Class type.
+ * @param options Configuration options.
  */
-export function OneToMany(typeFunction: () => new () => any): PropertyDecorator {
-    return (target, propertyKey) => {
-        // Metadata storage will go here.
+export function OneToMany(typeFunc: () => Function, options: RelationOptions): PropertyDecorator {
+    return (target: Object, propertyKey: string | symbol) => {
+        metadataStorage.addRelation({
+            target: target.constructor,
+            propertyKey: propertyKey.toString(),
+            relationType: '1:N',
+            relatedTypeFunc: typeFunc,
+            foreignKeyColumn: options.foreignKey
+        });
     };
 }
 
 /**
- * Decorator for a many-to-one relationship (navigation property).
- * Example: A Post belongs to one User. This goes on the Post.user property.
- * * @param typeFunction - A function that returns the related entity class.
+ * Defines a Many-to-One relationship.
+ * @param typeFunc Function returning the related Class type.
+ * @param options Configuration options.
  */
-export function ManyToOne(typeFunction: () => new () => any): PropertyDecorator {
-    return (target, propertyKey) => {
-        // Metadata storage will go here.
+export function ManyToOne(typeFunc: () => Function, options: RelationOptions): PropertyDecorator {
+    return (target: Object, propertyKey: string | symbol) => {
+        metadataStorage.addRelation({
+            target: target.constructor,
+            propertyKey: propertyKey.toString(),
+            relationType: 'N:1',
+            relatedTypeFunc: typeFunc,
+            foreignKeyColumn: options.foreignKey
+        });
     };
 }

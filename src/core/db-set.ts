@@ -32,21 +32,28 @@ export class DbSet<T extends object> {
     this.unitOfWork.registerRemoved(entity);
   }
 
-
   /**
    * Finds an entity by its primary key.
    */
   public find(id: any): T | null {
-    // FIXED: This now calls our new service method
-    return this.spreadsheetService.findRowById<T>(this.entityType, id);
+    const entity = this.spreadsheetService.findRowById<T>(this.entityType, id);
+    
+    if (entity) {
+      this._hydrateRelations(entity);
+    }
+    return entity;
   }
 
   /**
    * Returns all entities from the sheet.
    */
   public all(): T[] {
-    // FIXED: This now passes the entityType, not a string
-    return this.spreadsheetService.getAllRows<T>(this.entityType);
+    const entities = this.spreadsheetService.getAllRows<T>(this.entityType);
+    
+    for (const entity of entities) {
+      this._hydrateRelations(entity);
+    }
+    return entities;
   }
 
   /**
@@ -55,5 +62,50 @@ export class DbSet<T extends object> {
   public where(predicate: (item: T) => boolean): T[] {
     const allItems = this.all();
     return allItems.filter(predicate);
+  }
+
+  /**
+   * Populates navigation properties based on metadata.
+   */
+  private _hydrateRelations(entity: T): void {
+    const meta = metadataStorage.entities.find(e => e.target === this.entityType);
+    if (!meta || !meta.relations.length) return;
+
+    // We need the Primary Key value of the current entity for 1:N lookups
+    const pkProp = meta.columns.find(c => c.isPrimaryKey)?.propertyName;
+    const myId = pkProp ? (entity as any)[pkProp] : null;
+
+    for (const rel of meta.relations) {
+      
+      const relatedEntityClass = rel.relatedTypeFunc();
+
+      if (rel.relationType === 'N:1') {
+        // --- Many-to-One ---
+        // 1. Get the foreign key value from THIS entity (e.g., post.userId)
+        const fkValue = (entity as any)[rel.foreignKeyColumn];
+        
+        if (fkValue) {
+          // 2. Find the related parent by its ID
+          const related = this.spreadsheetService.findRowById(relatedEntityClass, fkValue);
+          // 3. Assign to the navigation property
+          (entity as any)[rel.propertyKey] = related;
+        }
+      } 
+      
+      else if (rel.relationType === '1:N') {
+        // --- One-to-Many ---
+        // 1. Need our own ID
+        if (myId) {
+          // 2. Find all children where THEIR foreign key matches OUR id
+          const children = this.spreadsheetService.findRowsByColumn(
+            relatedEntityClass, 
+            rel.foreignKeyColumn, 
+            myId
+          );
+          // 3. Assign array to navigation property
+          (entity as any)[rel.propertyKey] = children;
+        }
+      }      
+    }
   }
 }

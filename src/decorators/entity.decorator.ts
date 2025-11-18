@@ -9,7 +9,7 @@ export function Entity(options: EntityOptions): ClassDecorator {
   return (target) => {
     metadataStorage.addEntity({
       target: target,
-      sheetName: options.sheetName,
+      sheetName: options.sheetName
     });
   };
 }

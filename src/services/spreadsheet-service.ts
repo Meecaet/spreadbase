@@ -169,6 +169,39 @@ export class SpreadsheetService {
     }
   }
 
+  /**
+   * Finds all rows where a specific column matches a value.
+   * Used for loading 1:N relationships.
+   */
+  public findRowsByColumn<T extends object>(
+    entityType: Function, 
+    columnName: string, 
+    value: any
+  ): T[] {
+    const meta = metadataStorage.entities.find(e => e.target === entityType);
+    if (!meta) throw new Error(`No metadata for ${entityType.name}`);
+
+    const sheet = this.getSheet(meta.sheetName);
+    if (sheet.getLastRow() <= 1) return [];
+
+    const headerMap = this.getHeaderMap(sheet);
+    const colIndex = headerMap[columnName];
+
+    if (colIndex === undefined) {
+      throw new Error(`Column '${columnName}' not found on entity '${meta.target.name}'`);
+    }
+
+    // TODO: OPTIMIZATION - Use TextFinder here for faster lookups (similar to findRowById)
+    // For now, we'll use the simpler scan to ensure correctness first.
+    const allValues = sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).getValues();
+
+    const matchingRows = allValues.filter(row => {
+      // Loose equality (==) handles number vs string issues common in Sheets
+      return row[colIndex] == value; 
+    });
+
+    return matchingRows.map(row => this._mapRowToEntity<T>(entityType, row, headerMap));
+  }
 
   /**
    * Inserts new entities into the spreadsheet.
@@ -182,6 +215,13 @@ export class SpreadsheetService {
     this._assignAutoIncrementingKeys(meta, entities);
 
     const sheet = this.getSheet(meta.sheetName);
+
+    // Ensure header exists if sheet is new
+    if (sheet.getLastRow() === 0) {
+      const columnNames = meta.columns.map(c => c.propertyName);
+      this.createHeader(sheet, columnNames);
+    }
+
     const headerMap = this.getHeaderMap(sheet);
       
     // 2. Get the map of all existing PKs in the sheet.
@@ -216,20 +256,10 @@ export class SpreadsheetService {
     
     // 5. If we're here, no duplicates were found. Proceed with insertion.
     
-    // Ensure header exists if sheet is new (this logic is from before)
-    if (sheet.getLastRow() === 0) {
-      const columnNames = meta.columns.map(c => c.propertyName);
-      this.createHeader(sheet, columnNames);
-    }
-    
     const newRows: any[][] = [];
     
     for (const entity of entities) {
-      const row = new Array(Object.keys(headerMap).length);
-      for (const colName in headerMap) {
-        const colIndex = headerMap[colName];
-        row[colIndex!] = (entity as any)[colName];
-      }
+      const row = this._mapEntityToRow(entity, meta, headerMap);
       newRows.push(row);
     }
 
@@ -278,18 +308,18 @@ export class SpreadsheetService {
         // but ONLY for non-primary-key columns.
         const arrayIndexToUpdate = rowNumber - 1; 
         
-        // Get the *existing* row from our sheet data
+        const serializedEntityRow = this._mapEntityToRow(entity, meta, headerMap);
+
+        // Get the existing row to preserve data not in the entity (if any)
         const existingRow = allValues[arrayIndexToUpdate];
-        
-        // Create the new row based on the existing one
-        const newRow = [...existingRow!]; 
+        const newRow = [...existingRow!];
         
         for (const colName of allColumnNames) {
           // If it's NOT a primary key, update its value
           if (!pkColumnSet.has(colName)) {
             const colIndex = headerMap[colName];
             if (colIndex !== undefined) {
-              newRow[colIndex] = (entity as any)[colName];
+              newRow[colIndex] = serializedEntityRow[colIndex];
             }
           }
         }
@@ -400,20 +430,67 @@ export class SpreadsheetService {
     headerMap: { [key: string]: number }
   ): T {
     const meta = metadataStorage.entities.find(e => e.target === entityType);
-    if (!meta) {
-      // This should not be reachable if called from other methods
-      throw new Error(`No metadata found for ${entityType.name}`);
-    }
+    if (!meta) throw new Error(`No metadata found for ${entityType.name}`);
 
     const entity = new (entityType as any)();
+
     for (const col of meta.columns) {
       const colIndex = headerMap[col.propertyName];
       if (colIndex !== undefined) {
-        // TODO: Add type conversion (Dates, etc.)
-        (entity as any)[col.propertyName] = rowValues[colIndex];
+        let value = rowValues[colIndex];
+
+        // --- Deserialization Logic ---
+        if (value !== '' && value !== null && value !== undefined) {
+          if (col.type === 'json') {
+            try {
+              // If it's already an object (rare in Sheets, but possible via script), leave it.
+              // Otherwise, parse string.
+              value = (typeof value === 'string') ? JSON.parse(value) : value;
+            } catch (e) {
+              console.warn(`Spreadbase: Failed to parse JSON for column ${col.propertyName}`, e);
+              value = null;
+            }
+          } else if (col.type === 'date') {
+            // Sheets usually returns a Date object, but sometimes a string or number
+            if (!(value instanceof Date)) {
+              value = new Date(value);
+            }
+          }
+        }
+
+        (entity as any)[col.propertyName] = value;
       }
     }
     return entity;
+  }
+
+  /**
+   * Helper: Converts a typed Entity into a raw sheet row array.
+   * Handles JSON stringification.
+   */
+  private _mapEntityToRow(
+    entity: object, 
+    meta: EntityMetadata, 
+    headerMap: { [key: string]: number }
+  ): any[] {
+    const row = new Array(Object.keys(headerMap).length);
+    
+    for (const colName in headerMap) {
+      const colIndex = headerMap[colName];
+      const colMeta = meta.columns.find(c => c.propertyName === colName);
+      let value = (entity as any)[colName];
+
+      // --- Serialization Logic ---
+      if (value !== null && value !== undefined) {
+        if (colMeta?.type === 'json') {
+          value = JSON.stringify(value);
+        } 
+      }
+      // ---------------------------
+
+      row[colIndex!] = value;
+    }
+    return row;
   }
 
   /**
@@ -455,4 +532,47 @@ export class SpreadsheetService {
     }
   }
 
+  /**
+   * Checks the sheet headers against the entity metadata.
+   * Appends any missing columns to the right side of the header row.
+   */
+  public syncSheetHeaders(entityType: Function): void {
+    const meta = metadataStorage.entities.find(e => e.target === entityType);
+    if (!meta) throw new Error(`No metadata found for ${entityType.name}`);
+
+    const sheet = this.getSheet(meta.sheetName);
+    
+    // Case 1: New Sheet (Empty)
+    if (sheet.getLastRow() === 0) {
+      const columnNames = meta.columns.map(c => c.propertyName);
+      this.createHeader(sheet, columnNames);
+      return;
+    }
+
+    // Case 2: Existing Sheet - Check for missing columns
+    const lastCol = sheet.getLastColumn();
+    
+    // Read existing headers
+    // If lastCol is 0 (sheet exists but is empty), handled by Case 1 or safe to assume empty
+    if (lastCol === 0) return; 
+
+    const currentHeaders = sheet.getRange(1, 1, 1, lastCol).getValues()[0] as string[];
+    const currentHeaderSet = new Set(currentHeaders);
+
+    // Find which columns from metadata are missing in the sheet
+    const missingColumns = meta.columns
+      .map(c => c.propertyName)
+      .filter(propName => !currentHeaderSet.has(propName));
+
+    if (missingColumns.length > 0) {
+      // Append missing columns to the right
+      const startCol = lastCol + 1;
+      const range = sheet.getRange(1, startCol, 1, missingColumns.length);
+      
+      range.setValues([missingColumns]);
+      range.setFontWeight('bold');
+      
+      Logger.log(`Spreadbase: Synced schema for '${meta.sheetName}'. Added columns: ${missingColumns.join(', ')}`);
+    }
+  }
 }
