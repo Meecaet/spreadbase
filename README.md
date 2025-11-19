@@ -21,14 +21,16 @@ Type Marshalling: Handles JSON objects and Date serialization automatically.
 
 Installation
 Bash
-
+```
 npm install spreadbase reflect-metadata
+```
 Note: You must enable experimentalDecorators and disable emitDecoratorMetadata in your tsconfig.json.
 
 Quick Start
 1. Define your Entities
 TypeScript
 
+```
 import { Entity, Column, PrimaryKey, OneToMany, ManyToOne } from 'spreadbase';
 
 @Entity({ sheetName: 'Users' })
@@ -59,9 +61,11 @@ export class Post {
   @ManyToOne(() => User, { foreignKey: 'userId' })
   user!: User;
 }
+```
 2. Usage
 TypeScript
 
+```
 import { SpreadbaseContext } from 'spreadbase';
 
 function main() {
@@ -91,6 +95,8 @@ function main() {
   const fetchedUser = context.Users.find(user.id);
   console.log(fetchedUser.posts[0].title); // "Hello World"
 }
+```
+
 Limitations
 Spreadbase is an abstraction over Google Sheets. It is not a replacement for PostgreSQL or MongoDB for high-concurrency or large-scale applications. It is limited by Google Apps Script quotas and the performance limits of Google Sheets (approx. 5-10 million cells, but performance degrades earlier).
 
@@ -113,14 +119,15 @@ Sérialisation des Types : Gère automatiquement les objets JSON et les dates.
 
 Installation
 Bash
-
+```
 npm install spreadbase reflect-metadata
+```
 Note : Vous devez activer experimentalDecorators et désactiver emitDecoratorMetadata dans votre tsconfig.json.
 
 Démarrage Rapide
 1. Définir vos Entités
 TypeScript
-
+```
 import { Entity, Column, PrimaryKey, OneToMany, ManyToOne } from 'spreadbase';
 
 @Entity({ sheetName: 'Utilisateurs' })
@@ -151,9 +158,10 @@ export class Publication {
   @ManyToOne(() => Utilisateur, { foreignKey: 'utilisateurId' })
   utilisateur!: Utilisateur;
 }
+```
 2. Utilisation
 TypeScript
-
+```
 import { SpreadbaseContext } from 'spreadbase';
 
 function main() {
@@ -183,6 +191,7 @@ function main() {
   const fetchedUser = context.Utilisateurs.find(user.id);
   console.log(fetchedUser.publications[0].titre); // "Bonjour le monde"
 }
+```
 Limitations
 Spreadbase est une abstraction par-dessus Google Sheets. Ce n'est pas un remplacement pour PostgreSQL ou MongoDB pour des applications à haute concurrence ou à grande échelle. Il est limité par les quotas de Google Apps Script et les limites de performance de Google Sheets.
 
@@ -205,14 +214,15 @@ Serialização de Tipos: Lida automaticamente com objetos JSON e datas.
 
 Instalação
 Bash
-
+```
 npm install spreadbase reflect-metadata
+```
 Nota: Você deve habilitar experimentalDecorators e desabilitar emitDecoratorMetadata no seu tsconfig.json.
 
 Início Rápido
 1. Defina suas Entidades
 TypeScript
-
+```
 import { Entity, Column, PrimaryKey, OneToMany, ManyToOne } from 'spreadbase';
 
 @Entity({ sheetName: 'Usuarios' })
@@ -243,9 +253,10 @@ export class Postagem {
   @ManyToOne(() => Usuario, { foreignKey: 'usuarioId' })
   usuario!: Usuario;
 }
+```
 2. Uso
 TypeScript
-
+```
 import { SpreadbaseContext } from 'spreadbase';
 
 function main() {
@@ -275,6 +286,7 @@ function main() {
   const usuarioBuscado = context.Usuarios.find(user.id);
   console.log(usuarioBuscado.postagens[0].titulo); // "Olá Mundo"
 }
+```
 Limitações
 O Spreadbase é uma camada de abstração sobre o Google Sheets. Ele não substitui o PostgreSQL ou MongoDB para aplicações de alta concorrência ou grande escala. Ele é limitado pelas cotas do Google Apps Script e pelos limites de desempenho do Google Sheets.
 
@@ -282,7 +294,7 @@ O Spreadbase é uma camada de abstração sobre o Google Sheets. Ele não substi
 
 Configuration (tsconfig.json)
 To ensure Spreadbase works correctly with clasp and rollup, ensure your configuration matches these settings:
-
+```
 JSON
 
 {
@@ -295,4 +307,6 @@ JSON
     "types": ["google-apps-script", "node"]
   }
 }
+```
+
 Spreadbase — Made by Mateus Caetano (with Gemini help).
