@@ -1,4 +1,4 @@
-Spreadbase
+# Spreadbase
 Spreadbase is a lightweight, robust Object-Relational Mapper (ORM) for Google Apps Script. It allows you to use a Google Spreadsheet as a relational database using TypeScript classes, decorators, and standard repository patterns.
 
 It is designed for personal projects, prototypes, and small internal tools where a full SQL database is overkill, but raw spreadsheet manipulation is too messy.
@@ -6,31 +6,31 @@ It is designed for personal projects, prototypes, and small internal tools where
 🌐 Choose your language / Choisissez votre langue / Escolha seu idioma
 <details open> <summary><strong>🇺🇸 English</strong></summary>
 
-Features
-Code-First Design: Define your schema using TypeScript classes and decorators (@Entity, @Column).
+## Features
+**Code-First Design**: Define your schema using TypeScript classes and decorators (@Entity, @Column).
 
-Relationships: Full support for OneToOne, OneToMany, and ManyToOne with eager loading.
+**Relationships**: Full support for OneToOne, OneToMany, and ManyToOne with eager loading.
 
-Automatic ID Management: Built-in Auto-Increment support for primary keys.
+**Automatic ID Management**: Built-in Auto-Increment support for primary keys.
 
-Transactions: Uses a UnitOfWork pattern to batch changes (inserts, updates, deletes).
+**Future - Transactions**: Uses a UnitOfWork pattern to batch changes (inserts, updates, deletes).
 
-Zero Config: Can automatically create the database file and sync schema headers (context.sync()).
+**Zero Config**: Can automatically create the database file and sync schema headers (context.sync()).
 
-Type Marshalling: Handles JSON objects and Date serialization automatically.
+**Type Marshalling**: Handles JSON objects and Date serialization automatically.
 
-Installation
-Bash
-```
+## Installation
+
+```Bash
 npm install spreadbase reflect-metadata
 ```
 Note: You must enable experimentalDecorators and disable emitDecoratorMetadata in your tsconfig.json.
 
-Quick Start
-1. Define your Entities
-TypeScript
+## Quick Start
 
-```
+1. Define your Entities
+
+```TypeScript
 import { Entity, Column, PrimaryKey, OneToMany, ManyToOne } from 'spreadbase';
 
 @Entity({ sheetName: 'Users' })
@@ -63,9 +63,8 @@ export class Post {
 }
 ```
 2. Usage
-TypeScript
 
-```
+```TypeScript
 import { SpreadbaseContext } from 'spreadbase';
 
 function main() {
@@ -97,37 +96,40 @@ function main() {
 }
 ```
 
-Limitations
-Spreadbase is an abstraction over Google Sheets. It is not a replacement for PostgreSQL or MongoDB for high-concurrency or large-scale applications. It is limited by Google Apps Script quotas and the performance limits of Google Sheets (approx. 5-10 million cells, but performance degrades earlier).
+## Limitations
+
+Spreadbase is an abstraction over Google Sheets. It is **not** a replacement for PostgreSQL or MongoDB for high-concurrency or large-scale applications. It is limited by Google Apps Script quotas and the performance limits of Google Sheets (approx. 5-10 million cells, but performance degrades earlier).
 
 </details>
 
 <details> <summary><strong>🇨🇦 Français (Canadien)</strong></summary>
 
-Fonctionnalités
-Approche Code-First : Définissez votre schéma à l'aide de classes TypeScript et de décorateurs (@Entity, @Column).
+## Fonctionnalités
 
-Relations : Support complet pour OneToOne, OneToMany, et ManyToOne avec chargement hâtif (eager loading).
+**Approche Code-First** : Définissez votre schéma à l'aide de classes TypeScript et de décorateurs (@Entity, @Column).
 
-Gestion Automatique des ID : Support intégré pour l'auto-incrémentation des clés primaires.
+**Relations** : Support complet pour OneToOne, OneToMany, et ManyToOne avec chargement hâtif (eager loading).
 
-Transactions : Utilise le patron UnitOfWork pour regrouper les changements (insertions, mises à jour, suppressions).
+**Gestion Automatique des ID** : Support intégré pour l'auto-incrémentation des clés primaires.
 
-Configuration Zéro : Peut créer automatiquement le fichier de base de données et synchroniser les en-têtes de schéma (context.sync()).
+**Pour le futur - Transactions** : Utilise le patron UnitOfWork pour regrouper les changements (insertions, mises à jour, suppressions).
 
-Sérialisation des Types : Gère automatiquement les objets JSON et les dates.
+**Configuration Zéro** : Peut créer automatiquement le fichier de base de données et synchroniser les en-têtes de schéma (context.sync()).
 
-Installation
-Bash
-```
+**Sérialisation des Types** : Gère automatiquement les objets JSON et les dates.
+
+## Installation
+
+```Bash
 npm install spreadbase reflect-metadata
 ```
 Note : Vous devez activer experimentalDecorators et désactiver emitDecoratorMetadata dans votre tsconfig.json.
 
-Démarrage Rapide
+## Démarrage Rapide
+
 1. Définir vos Entités
-TypeScript
-```
+
+```TypeScript
 import { Entity, Column, PrimaryKey, OneToMany, ManyToOne } from 'spreadbase';
 
 @Entity({ sheetName: 'Utilisateurs' })
@@ -160,8 +162,8 @@ export class Publication {
 }
 ```
 2. Utilisation
-TypeScript
-```
+
+```TypeScript
 import { SpreadbaseContext } from 'spreadbase';
 
 function main() {
@@ -192,37 +194,39 @@ function main() {
   console.log(fetchedUser.publications[0].titre); // "Bonjour le monde"
 }
 ```
-Limitations
-Spreadbase est une abstraction par-dessus Google Sheets. Ce n'est pas un remplacement pour PostgreSQL ou MongoDB pour des applications à haute concurrence ou à grande échelle. Il est limité par les quotas de Google Apps Script et les limites de performance de Google Sheets.
+## Limitations
+Spreadbase est une abstraction par-dessus Google Sheets. Ce **n'est pas** un remplacement pour PostgreSQL ou MongoDB pour des applications à haute concurrence ou à grande échelle. Il est limité par les quotas de Google Apps Script et les limites de performance de Google Sheets.
 
 </details>
 
 <details> <summary><strong>🇧🇷 Português (Brasileiro)</strong></summary>
 
-Funcionalidades
-Design Code-First: Defina seu esquema usando classes TypeScript e decorators (@Entity, @Column).
+## Funcionalidades
 
-Relacionamentos: Suporte completo para OneToOne, OneToMany e ManyToOne com carregamento ansioso (eager loading).
+**Design Code-First**: Defina seu esquema usando classes TypeScript e decorators (@Entity, @Column).
 
-Gerenciamento Automático de ID: Suporte nativo para Auto-Incremento de chaves primárias.
+**Relacionamentos**: Suporte completo para OneToOne, OneToMany e ManyToOne com carregamento ansioso (eager loading).
 
-Transações: Utiliza o padrão UnitOfWork para agrupar alterações (inserções, atualizações, exclusões).
+**Gerenciamento Automático de ID**: Suporte nativo para Auto-Incremento de chaves primárias.
 
-Zero Configuração: Pode criar automaticamente o arquivo de banco de dados e sincronizar o cabeçalho do esquema (context.sync()).
+**Futuramente - Transações**: Utiliza o padrão UnitOfWork para agrupar alterações (inserções, atualizações, exclusões).
 
-Serialização de Tipos: Lida automaticamente com objetos JSON e datas.
+**Zero Configuração**: Pode criar automaticamente o arquivo de banco de dados e sincronizar o cabeçalho do esquema (context.sync()).
 
-Instalação
-Bash
+**Serialização de Tipos**: Lida automaticamente com objetos JSON e datas.
+
+## Instalação
+
 ```
-npm install spreadbase reflect-metadata
+npm install spreadbase reflect-metadataBash
 ```
 Nota: Você deve habilitar experimentalDecorators e desabilitar emitDecoratorMetadata no seu tsconfig.json.
 
-Início Rápido
+## Início Rápido
+
 1. Defina suas Entidades
-TypeScript
-```
+
+```TypeScript
 import { Entity, Column, PrimaryKey, OneToMany, ManyToOne } from 'spreadbase';
 
 @Entity({ sheetName: 'Usuarios' })
@@ -254,9 +258,10 @@ export class Postagem {
   usuario!: Usuario;
 }
 ```
+
 2. Uso
-TypeScript
-```
+
+```TypeScript
 import { SpreadbaseContext } from 'spreadbase';
 
 function main() {
@@ -287,15 +292,15 @@ function main() {
   console.log(usuarioBuscado.postagens[0].titulo); // "Olá Mundo"
 }
 ```
-Limitações
-O Spreadbase é uma camada de abstração sobre o Google Sheets. Ele não substitui o PostgreSQL ou MongoDB para aplicações de alta concorrência ou grande escala. Ele é limitado pelas cotas do Google Apps Script e pelos limites de desempenho do Google Sheets.
+## Limitações
+
+O Spreadbase é uma camada de abstração sobre o Google Sheets. Ele **não** substitui o PostgreSQL ou MongoDB para aplicações de alta concorrência ou grande escala. Ele é limitado pelas cotas do Google Apps Script e pelos limites de desempenho do Google Sheets.
 
 </details>
 
 Configuration (tsconfig.json)
 To ensure Spreadbase works correctly with clasp and rollup, ensure your configuration matches these settings:
-```
-JSON
+```JSON
 
 {
   "compilerOptions": {
