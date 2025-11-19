@@ -1,4 +1,3 @@
-// src/decorators/entity.decorator.ts
 import { metadataStorage } from '../core/metadata-storage';
 
 export interface EntityOptions {

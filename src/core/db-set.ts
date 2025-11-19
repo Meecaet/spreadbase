@@ -1,8 +1,6 @@
-// src/core/db-set.ts
-
 import { SpreadsheetService } from '../services/spreadsheet-service';
 import { UnitOfWork } from './unit-of-work';
-import { metadataStorage } from './metadata-storage'; // We need this now
+import { metadataStorage } from './metadata-storage';
 
 export class DbSet<T extends object> {
   private readonly entityType: new () => T;
@@ -19,7 +17,6 @@ export class DbSet<T extends object> {
     this.spreadsheetService = spreadsheetService;
   }
 
-  // ... (add and remove methods are unchanged)
   public add(entity: T): void {
     this.unitOfWork.registerNew(entity);
   }
@@ -78,8 +75,35 @@ export class DbSet<T extends object> {
     for (const rel of meta.relations) {
       
       const relatedEntityClass = rel.relatedTypeFunc();
+      
+      if (rel.relationType === '1:1') {
+        // --- One-to-One ---
+        // Determine if we are the "Owner" (we hold the FK) or "Inverse"
+        const isOwner = meta.columns.some(c => c.propertyName === rel.foreignKeyColumn);
 
-      if (rel.relationType === 'N:1') {
+        if (isOwner) {
+          // Case A: Owner Side (e.g., UserProfile.userId)
+          // We hold the key, so we find the related entity by ID.
+          const fkValue = (entity as any)[rel.foreignKeyColumn];
+          if (fkValue) {
+            const related = this.spreadsheetService.findRowById(relatedEntityClass, fkValue);
+            (entity as any)[rel.propertyKey] = related;
+          }
+        } else {
+          // Case B: Inverse Side (e.g., User.profile)
+          // They hold the key, so we search their sheet for our ID.
+          if (myId) {
+            // We use findRowsByColumn, but since it's 1:1, we take the first result
+            const rows = this.spreadsheetService.findRowsByColumn(
+              relatedEntityClass, 
+              rel.foreignKeyColumn, 
+              myId
+            );
+            (entity as any)[rel.propertyKey] = rows.length > 0 ? rows[0] : null;
+          }
+        }
+      }
+      else if (rel.relationType === 'N:1') {
         // --- Many-to-One ---
         // 1. Get the foreign key value from THIS entity (e.g., post.userId)
         const fkValue = (entity as any)[rel.foreignKeyColumn];

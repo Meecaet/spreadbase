@@ -1,4 +1,3 @@
-// src/decorators/column.decorators.ts
 import { metadataStorage } from '../core/metadata-storage';
 
 export type ColumnType = 'string' | 'number' | 'boolean' | 'date' | 'json';

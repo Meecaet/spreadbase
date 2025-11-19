@@ -59,7 +59,6 @@ export class UnitOfWork {
    * via the SpreadsheetService.
    */
   public commit(): void {
-    // TODO: Implement transaction logic (all or nothing)
     try {
       // 1. Deletions
       for (const [entityType, entities] of this.removedEntities.entries()) {
@@ -121,9 +120,7 @@ export class UnitOfWork {
         if (index > -1) {
           list.splice(index, 1);
         }
-    }
-    
-    
+    } 
   }
   
   private isRegistered(map: EntityMap, entity: object): boolean {

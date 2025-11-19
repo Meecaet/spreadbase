@@ -19,7 +19,7 @@ export {
 export type { ColumnOptions, ForeignKeyOptions } from './decorators/column.decorator';
 
 // Relationship decorators
-export { OneToMany, ManyToOne } from './decorators/relationship.decorators';
+export { OneToOne, OneToMany, ManyToOne } from './decorators/relationship.decorators';
 
 export type { RelationOptions } from './decorators/relationship.decorators';
 

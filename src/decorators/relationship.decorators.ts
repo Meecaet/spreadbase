@@ -5,6 +5,24 @@ export interface RelationOptions {
 }
 
 /**
+ * Defines a One-to-One relationship.
+ * Can be used on the owner side (holds the FK) or the inverse side.
+ * @param typeFunc Function returning the related Class type.
+ * @param options Configuration options.
+ */
+export function OneToOne(typeFunc: () => Function, options: RelationOptions): PropertyDecorator {
+    return (target: Object, propertyKey: string | symbol) => {
+    metadataStorage.addRelation({
+            target: target.constructor,
+            propertyKey: propertyKey.toString(),
+            relationType: '1:1', 
+            relatedTypeFunc: typeFunc,
+            foreignKeyColumn: options.foreignKey
+        });
+    };
+}
+
+/**
  * Defines a One-to-Many relationship
  * @param typeFunc Function returning the related Class type.
  * @param options Configuration options.
