@@ -6,6 +6,8 @@ import 'reflect-metadata';
 export { SpreadbaseContext } from './core/spreadbase-context';
 export type { ContextOptions } from './core/spreadbase-context';
 
+export { DbSet } from './core/db-set';
+
 // Entity decorators
 export { Entity } from './decorators/entity.decorator';
 export type { EntityOptions } from './decorators/entity.decorator';

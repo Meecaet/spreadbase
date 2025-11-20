@@ -28,9 +28,7 @@ export class SpreadbaseContext {
   private readonly spreadsheetService: SpreadsheetService;
 
   constructor(options: ContextOptions) {
-    if (!options.spreadsheetId) {
-      throw new Error('A spreadsheetId must be provided.');
-    }
+
     this.options = options;
 
     const finalSpreadsheetId = this._resolveSpreadsheetId(options);
@@ -46,10 +44,10 @@ export class SpreadbaseContext {
     for (const entity of metadataStorage.entities) {
       // Get the entity's class name
       const className = entity.target.name;
-      
+
       // Create the property name
       // This is a common convention, but can be configured
-      const propName = `${className}s`; 
+      const propName = `${className}s`;
 
       // Create a new DbSet for this entity type
       const dbSet = new DbSet(
@@ -128,20 +126,20 @@ export class SpreadbaseContext {
       // SpreadsheetApp.create() puts it in the Root folder by default
       const newSS = SpreadsheetApp.create(name);
       const newFile = DriveApp.getFileById(newSS.getId());
-      
+
       // Move to the target folder
       // (We use moveTo for newer runtimes, or add/remove parents for older ones)
-      newFile.moveTo(folder); 
-      
+      newFile.moveTo(folder);
+
       Logger.log(`Spreadbase: Created new database '${name}' in folder '${folder.getName()}'.`);
       return newSS.getId();
 
     } catch (e: unknown) {
-      if(e instanceof Error){
+      if (e instanceof Error) {
         throw new Error(`Spreadbase: Failed to initialize database file. ${e.message}`);
-      }else{
+      } else {
         throw new Error(`Spreadbase: Failed to initialize database file. Unknown error`);
-      }      
+      }
     }
   }
 }
