@@ -1,6 +1,6 @@
 import { metadataStorage } from '../core/metadata-storage';
 
-export type ColumnType = 'string' | 'number' | 'boolean' | 'date' | 'json';
+export type ColumnType = 'string' | 'number' | 'boolean' | 'date' | 'json' | 'time';
 
 export interface ColumnOptions {
   type?: ColumnType;
